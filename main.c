@@ -18,13 +18,16 @@ void shell_loop() {
 	do {
 		printf("> ");
 		line = shell_read_line();
+		if (strcmp(line,"exit") == 0){
+			exit(1);
+		}
 		args = shell_split_line(line);
-		//status = shell_execute(args);
-		size = sizeof(args)/sizeof(*args);
+		status = shell_execute(args);
+		//size = sizeof(args)/sizeof(*args);
 		//print()
-		printf("%s %d\n",line,size);
+		//printf("%s %d\n",line,size);
 		free(line);
-		//free(args);
+		free(args);
 	} while (status);
 }
 
@@ -56,7 +59,7 @@ char** shell_split_line(char* line) {
 	while (token != NULL) {
 		tokens[position] = token;
 		position++;
-		
+		//printf("%s\n",token);
 		if (position >= bufsize) {
 			bufsize += TOKEN_BUFFER_SIZE;
 			tokens = realloc(tokens, bufsize * sizeof(char*));
@@ -69,12 +72,53 @@ char** shell_split_line(char* line) {
 		token = strtok(NULL, TOKEN_DELIM);
 	}
 	tokens[position] = NULL;
-	printf("%d\n",position);
+	
 	return tokens;
 }
 
 int shell_execute(char** pString) {
-	return 0;
+	int i;
+	
+	if (pString[0] == NULL) {
+		// An empty command was entered.
+		return 1;
+	}
+	
+/*	for (i = 0; i < lsh_num_builtins(); i++) {
+		if (strcmp(args[0], builtin_str[i]) == 0) {
+			return (*builtin_func[i])(args);
+		}
+	}*/
+	
+	return lsh_launch(pString);
+	//return 0;
+}
+
+
+
+int lsh_launch(char **args)
+{
+	pid_t pid, wpid;
+	int status;
+	
+	pid = fork();
+	if (pid == 0) {
+		// Child process
+		if (execvp(args[0], args) == -1) {
+			perror("lsh");
+		}
+		exit(EXIT_FAILURE);
+	} else if (pid < 0) {
+		// Error forking
+		perror("lsh");
+	} else {
+		// Parent process
+		do {
+			wpid = waitpid(pid, &status, WUNTRACED);
+		} while (!WIFEXITED(status) && !WIFSIGNALED(status));
+	}
+	
+	return 1;
 }
 
 void print(char *a)
