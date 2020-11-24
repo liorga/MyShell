@@ -13,19 +13,18 @@ int main(int argc, char* argv[]) {
 void shell_loop() {
 	char* line;
 	char** args;
-	int status = 1, size = 0;
+	int status = 1;
+	
 	
 	do {
 		printf("> ");
 		line = shell_read_line();
-		if (strcmp(line,"exit") == 0){
-			exit(1);
+		if(!strcmp(line,"exit\n")){
+			exit(EXIT_SUCCESS);
 		}
 		args = shell_split_line(line);
 		status = shell_execute(args);
-		//size = sizeof(args)/sizeof(*args);
-		//print()
-		//printf("%s %d\n",line,size);
+
 		free(line);
 		free(args);
 	} while (status);
@@ -77,11 +76,15 @@ char** shell_split_line(char* line) {
 }
 
 int shell_execute(char** pString) {
-	int i;
+	//int i;
 	
 	if (pString[0] == NULL) {
 		// An empty command was entered.
 		return 1;
+	}
+	
+	if(!strcmp(pString[0],"exit")){
+		return 0;
 	}
 	
 /*	for (i = 0; i < lsh_num_builtins(); i++) {
@@ -98,7 +101,8 @@ int shell_execute(char** pString) {
 
 int lsh_launch(char **args)
 {
-	pid_t pid, wpid;
+	pid_t pid;
+	pid_t wpid;
 	int status;
 	
 	pid = fork();
@@ -121,7 +125,7 @@ int lsh_launch(char **args)
 	return 1;
 }
 
-void print(char *a)
+/*void print(char *a)
 {
 	int i=0;
 	printf("the list of names include : \n");
@@ -129,4 +133,4 @@ void print(char *a)
 		printf("%s\n", *(a+i));
 		i++;
 	}
-}
+}*/

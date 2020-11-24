@@ -21,6 +21,6 @@ char** shell_split_line(char* line);
 int shell_execute(char** pString);
 void shell_loop();
 int lsh_launch(char **args);
-void print(char *a);
+//void print(char *a);
 
 #endif //SHELL_MY_SHELL_H
