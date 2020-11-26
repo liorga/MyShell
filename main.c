@@ -16,63 +16,71 @@ void shell_loop() {
 	int status = 1;
 	
 	
-	do {
+	while (status) {
 		printf("> ");
 		line = shell_read_line();
-		if(!strcmp(line,"exit\n")){
+		if (!strcmp(line, "exit")) {
 			exit(EXIT_SUCCESS);
 		}
 		args = shell_split_line(line);
-		status = shell_execute(args);
-
+		//status = shell_execute(args);
+		
 		free(line);
 		free(args);
-	} while (status);
+	}
+	
 }
 
 char* shell_read_line() {
 	char* line = NULL;
+	
 	ssize_t bufsize = 0; // have getline allocate a buffer for us
 	if (getline(&line, &bufsize, stdin) == -1){
-		if (feof(stdin)) {
+/*		if (feof(stdin)) {
 			exit(EXIT_SUCCESS);  // We recieved an EOF
-		} else  {
+		} else{*/
 			perror("readline");
 			exit(EXIT_FAILURE);
-		}
+		//}
 	}
+	//getline reads the entire line including \n so this action will put \0 in the end of the string
+	size_t size = 0;
+	size = strlen(line);
+	line[size-1] = '\0';
+	
+	
 	return line;
 }
 
 char** shell_split_line(char* line) {
-	int bufsize = TOKEN_BUFFER_SIZE, position = 0;
-	char **tokens = malloc(bufsize * sizeof(char*));
-	char *token;
+	int bufsize = TOKEN_BUFFER_SIZE;
+	int pos = 0;
+	char** words_arr = malloc(bufsize * sizeof(char*));
+	char* single_word;
 	
-	if (!tokens) {
+	if (!words_arr) {
 		fprintf(stderr, "lsh: allocation error\n");
 		exit(EXIT_FAILURE);
 	}
 	
-	token = strtok(line, TOKEN_DELIM);
-	while (token != NULL) {
-		tokens[position] = token;
-		position++;
-		//printf("%s\n",token);
-		if (position >= bufsize) {
+	single_word = strtok(line, TOKENS);
+	while (single_word != NULL) {
+		words_arr[pos] = single_word;
+		pos++;
+		if (pos >= bufsize) {
 			bufsize += TOKEN_BUFFER_SIZE;
-			tokens = realloc(tokens, bufsize * sizeof(char*));
-			if (!tokens) {
+			words_arr = realloc(words_arr, bufsize * sizeof(char*));
+			if (!words_arr) {
 				fprintf(stderr, "lsh: allocation error\n");
 				exit(EXIT_FAILURE);
 			}
 		}
 		
-		token = strtok(NULL, TOKEN_DELIM);
+		single_word = strtok(NULL, TOKENS);
 	}
-	tokens[position] = NULL;
+	words_arr[pos] = NULL; // put null in the end of string array for execv to know when the args are over
 	
-	return tokens;
+	return words_arr;
 }
 
 int shell_execute(char** pString) {

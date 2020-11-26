@@ -13,7 +13,7 @@
 
 
 #define TOKEN_BUFFER_SIZE 64
-#define TOKEN_DELIM " \\t\r\n\a"
+#define TOKENS " \\t\r\n\a"
 
 
 char* shell_read_line();
