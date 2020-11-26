@@ -18,9 +18,8 @@
 
 char* shell_read_line();
 char** shell_split_line(char* line);
-int shell_execute(char** pString);
+int shell_execute(char** pString,int flag);
 void shell_loop();
-int lsh_launch(char **args);
-//void print(char *a);
+int lsh_launch(char **args,int flag);
 
 #endif //SHELL_MY_SHELL_H

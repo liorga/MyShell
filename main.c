@@ -14,7 +14,8 @@ void shell_loop() {
 	char* line;
 	char** args;
 	int status = 1;
-	
+	int flag_for_wait = 0;
+	char wait_sign = '&';
 	
 	while (status) {
 		printf("> ");
@@ -22,8 +23,17 @@ void shell_loop() {
 		if (!strcmp(line, "exit")) {
 			exit(EXIT_SUCCESS);
 		}
+		
+		if(strchr(line,wait_sign) == NULL){
+			flag_for_wait = 0;
+		} else{
+			flag_for_wait = 1;
+		}
+		//printf("%s %d\n",line,flag_for_wait);
+		
 		args = shell_split_line(line);
-		//status = shell_execute(args);
+		
+		status = shell_execute(args,flag_for_wait);
 		
 		free(line);
 		free(args);
@@ -36,18 +46,13 @@ char* shell_read_line() {
 	
 	ssize_t bufsize = 0; // have getline allocate a buffer for us
 	if (getline(&line, &bufsize, stdin) == -1){
-/*		if (feof(stdin)) {
-			exit(EXIT_SUCCESS);  // We recieved an EOF
-		} else{*/
-			perror("readline");
-			exit(EXIT_FAILURE);
-		//}
+		perror("readline");
+		exit(EXIT_FAILURE);
 	}
 	//getline reads the entire line including \n so this action will put \0 in the end of the string
 	size_t size = 0;
 	size = strlen(line);
 	line[size-1] = '\0';
-	
 	
 	return line;
 }
@@ -58,8 +63,8 @@ char** shell_split_line(char* line) {
 	char** words_arr = malloc(bufsize * sizeof(char*));
 	char* single_word;
 	
-	if (!words_arr) {
-		fprintf(stderr, "lsh: allocation error\n");
+	if (words_arr == NULL) {
+		fprintf(stderr, "malloc has failed error\n");
 		exit(EXIT_FAILURE);
 	}
 	
@@ -69,9 +74,10 @@ char** shell_split_line(char* line) {
 		pos++;
 		if (pos >= bufsize) {
 			bufsize += TOKEN_BUFFER_SIZE;
+			
 			words_arr = realloc(words_arr, bufsize * sizeof(char*));
-			if (!words_arr) {
-				fprintf(stderr, "lsh: allocation error\n");
+			if (words_arr == NULL) {
+				fprintf(stderr, "realloc has failed error\n");
 				exit(EXIT_FAILURE);
 			}
 		}
@@ -83,16 +89,17 @@ char** shell_split_line(char* line) {
 	return words_arr;
 }
 
-int shell_execute(char** pString) {
+int shell_execute(char** pString,int flag) {
 	//int i;
+/*	if(flag){
+		printf("i am da i need to wait\n");
+	} else{
+		printf("i dont need to wait\n");
+	}*/
 	
 	if (pString[0] == NULL) {
 		// An empty command was entered.
 		return 1;
-	}
-	
-	if(!strcmp(pString[0],"exit")){
-		return 0;
 	}
 	
 /*	for (i = 0; i < lsh_num_builtins(); i++) {
@@ -101,13 +108,12 @@ int shell_execute(char** pString) {
 		}
 	}*/
 	
-	return lsh_launch(pString);
-	//return 0;
+	return lsh_launch(pString,flag);
 }
 
 
 
-int lsh_launch(char **args)
+int lsh_launch(char **args,int flag)
 {
 	pid_t pid;
 	pid_t wpid;
@@ -116,29 +122,15 @@ int lsh_launch(char **args)
 	pid = fork();
 	if (pid == 0) {
 		// Child process
-		if (execvp(args[0], args) == -1) {
-			perror("lsh");
-		}
+		execvp(args[0], args);
+		//if exec has returned then it has failed then i went the program to exit;
 		exit(EXIT_FAILURE);
-	} else if (pid < 0) {
-		// Error forking
-		perror("lsh");
-	} else {
-		// Parent process
-		do {
-			wpid = waitpid(pid, &status, WUNTRACED);
-		} while (!WIFEXITED(status) && !WIFSIGNALED(status));
 	}
 	
+	// Parent process
+	if(!flag) {
+		wpid = waitpid(pid, &status, WUNTRACED);
+	}
+	printf("%d\n",wpid);
 	return 1;
 }
-
-/*void print(char *a)
-{
-	int i=0;
-	printf("the list of names include : \n");
-	while(*(a) != '\0') {
-		printf("%s\n", *(a+i));
-		i++;
-	}
-}*/
