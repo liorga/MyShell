@@ -13,11 +13,11 @@ int main(int argc, char* argv[]) {
 void shell_loop() {
 	char* line;
 	char** args;
-	int status = 1;
+	int true = 1;
 	int flag_for_wait = 0;
 	char wait_sign = '&';
 	
-	while (status) {
+	while (true) {
 		printf("> ");
 		line = shell_read_line();
 		if (!strcmp(line, "exit")) {
@@ -33,7 +33,7 @@ void shell_loop() {
 		
 		args = shell_split_line(line);
 		
-		status = shell_execute(args,flag_for_wait);
+		shell_execute(args,flag_for_wait);
 		
 		free(line);
 		free(args);
@@ -89,7 +89,7 @@ char** shell_split_line(char* line) {
 	return words_arr;
 }
 
-int shell_execute(char** pString,int flag) {
+void shell_execute(char** pString,int flag) {
 	//int i;
 /*	if(flag){
 		printf("i am da i need to wait\n");
@@ -99,21 +99,16 @@ int shell_execute(char** pString,int flag) {
 	
 	if (pString[0] == NULL) {
 		// An empty command was entered.
-		return 1;
+		printf("No Command has entered\n");
+		return;
 	}
+	lsh_launch(pString,flag);
 	
-/*	for (i = 0; i < lsh_num_builtins(); i++) {
-		if (strcmp(args[0], builtin_str[i]) == 0) {
-			return (*builtin_func[i])(args);
-		}
-	}*/
-	
-	return lsh_launch(pString,flag);
 }
 
 
 
-int lsh_launch(char **args,int flag)
+void lsh_launch(char **args,int flag)
 {
 	pid_t pid;
 	pid_t wpid;
@@ -131,6 +126,6 @@ int lsh_launch(char **args,int flag)
 	if(!flag) {
 		wpid = waitpid(pid, &status, WUNTRACED);
 	}
-	printf("%d\n",wpid);
-	return 1;
+	//printf("%d\n",wpid);
+	
 }

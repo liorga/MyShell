@@ -13,13 +13,13 @@
 
 
 #define TOKEN_BUFFER_SIZE 64
-#define TOKENS " \\t\r\n\a"
+#define TOKENS " \\t\r\n\a&"
 
 
 char* shell_read_line();
 char** shell_split_line(char* line);
-int shell_execute(char** pString,int flag);
+void shell_execute(char** pString,int flag);
 void shell_loop();
-int lsh_launch(char **args,int flag);
+void lsh_launch(char **args,int flag);
 
 #endif //SHELL_MY_SHELL_H
