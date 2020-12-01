@@ -10,16 +10,19 @@
 #include <unistd.h>
 #include <sys/wait.h>
 #include <string.h>
+#include <fcntl.h>
 
 
 #define TOKEN_BUFFER_SIZE 64
-#define TOKENS " \\t\r\n\a&"
+#define TOKENS " <>\\t\r\n\a&"
 
 
-char* shell_read_line();
+
+char* read_line();
 char** split(char* line);
-void execute(char** pString,int flag);
+void execute(char** pString,int flag,int input,int output);
 void shell_loop();
 void launch(char **args,int flag);
+void launch_io_put(char** args,int io_flag,int flag);
 
 #endif //SHELL_MY_SHELL_H
