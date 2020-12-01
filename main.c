@@ -31,9 +31,9 @@ void shell_loop() {
 		}
 		//printf("%s %d\n",line,flag_for_wait);
 		
-		args = shell_split_line(line);
+		args = split(line);
 		
-		shell_execute(args,flag_for_wait);
+		execute(args,flag_for_wait);
 		
 		free(line);
 		free(args);
@@ -57,7 +57,7 @@ char* shell_read_line() {
 	return line;
 }
 
-char** shell_split_line(char* line) {
+char** split(char* line) {
 	int bufsize = TOKEN_BUFFER_SIZE;
 	int pos = 0;
 	char** words_arr = malloc(bufsize * sizeof(char*));
@@ -89,7 +89,7 @@ char** shell_split_line(char* line) {
 	return words_arr;
 }
 
-void shell_execute(char** pString,int flag) {
+void execute(char** pString,int flag) {
 	//int i;
 /*	if(flag){
 		printf("i am da i need to wait\n");
@@ -102,13 +102,13 @@ void shell_execute(char** pString,int flag) {
 		printf("No Command has entered\n");
 		return;
 	}
-	lsh_launch(pString,flag);
+	launch(pString,flag);
 	
 }
 
 
 
-void lsh_launch(char **args,int flag)
+void launch(char **args,int flag)
 {
 	pid_t pid;
 	pid_t wpid;

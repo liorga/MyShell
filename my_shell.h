@@ -17,9 +17,9 @@
 
 
 char* shell_read_line();
-char** shell_split_line(char* line);
-void shell_execute(char** pString,int flag);
+char** split(char* line);
+void execute(char** pString,int flag);
 void shell_loop();
-void lsh_launch(char **args,int flag);
+void launch(char **args,int flag);
 
 #endif //SHELL_MY_SHELL_H
