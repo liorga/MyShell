@@ -34,7 +34,7 @@ void shell_loop() {
 		} else{
 			flag_for_wait = 1;
 		}
-		if (strchr(line,redi_output) == NULL){
+/*		if (strchr(line,redi_output) == NULL){
 			output_flag = 0;
 		} else{
 			output_flag = 2;
@@ -43,7 +43,11 @@ void shell_loop() {
 			input_flag = 0;
 		} else{
 			input_flag = 1;
-		}
+		}*/
+		
+		//ls -la > a -> [ls , -la, > , a ,NULL]
+		// in loop over the args after finding io index in the args array then next index is the the io file
+		//then remove the io index and the io sign then procceed normely
 		
 		
 		//printf("%s %d\n",line,flag_for_wait);
@@ -152,11 +156,20 @@ void launch(char **args,int flag)
 	
 	// Parent process
 	if(!flag) {
+		//check if returned -1
 		wpid = waitpid(pid, &status, WUNTRACED);
 	}
 	//printf("%d\n",wpid);
 	
 }
+
+
+/**
+ *
+ * @param args
+ * @param io_flag
+ * @param flag
+ */
 
 void launch_io_put(char** args,int io_flag,int flag){
 	pid_t pid;

@@ -14,7 +14,7 @@
 
 
 #define TOKEN_BUFFER_SIZE 64
-#define TOKENS " <>\\t\r\n\a&"
+#define TOKENS " \\t\r\n\a&"
 
 
 
