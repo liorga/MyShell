@@ -77,6 +77,8 @@ char* read_line() {
     return line;
 }
 
+char** pipe_parsing()
+
 char** split(char* line) {
     int bufsize = TOKEN_BUFFER_SIZE;
     int pos = 0;
