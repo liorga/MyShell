@@ -14,8 +14,7 @@ void shell_loop() {
     char** args;
     int true = 1;
     int flag_for_wait = 0;
-    int input_flag = 0;
-    int output_flag = 0;
+    int io_flag = 0;
     char wait_sign = '&';
     char redi_output = '>';
     char redi_input = '<';
@@ -37,38 +36,23 @@ void shell_loop() {
             flag_for_wait = 1;
         }
 
-        if (strchr(line,redi_output) == NULL){
-            output_flag = 0;
+        if((strchr(line,redi_input) != NULL) || (strchr(line,redi_output) != NULL)){
+            io_flag = 1;
         } else{
-            output_flag = 2;
+            io_flag = 0;
         }
-        if (strchr(line,redi_input) == NULL){
-            input_flag = 0;
-        } else{
-            input_flag = 1;
-        }
-
-        //ls -la > a -> [ls , -la, > , a ,NULL]
-        // in loop over the args after finding io index in the args array then next index is the the io file
-        //then remove the io index and the io sign then procceed normely
-
-
-        //printf("%s %d\n",line,flag_for_wait);
 
         args = split(line);
 
         if(strcmp(args[0],"cd") == 0){
             my_cd(args);
         }
-
-        //	int i = find_filename_index(args);
-        // after splitting check for io redi signs if the is either < > then
-        // send args to another version of execute func whune inside it will get the io filename from
-        // args and then after open the io redi file to read or write
-        // remove the file name and the io sign.
-        // and open a new fork and run execvp but remember to add null at the end of args
-
-        execute(args,flag_for_wait,input_flag,output_flag);
+        //printf("io flag:%d\n",io_flag);
+        if(io_flag){
+            launch_io_put(args,flag_for_wait);
+        } else {
+            execute(args, flag_for_wait);
+        }
 
         free(line);
         free(args);
@@ -126,28 +110,12 @@ char** split(char* line) {
     return words_arr;
 }
 
-void execute(char** pString,int flag,int input,int output) {
-    //int i;
-/*	if(flag){
-		printf("i am da i need to wait\n");
-	} else{
-		printf("i dont need to wait\n");
-	}*/
-
+void execute(char** pString,int flag) {
 
     if (pString[0] == NULL) {
         // An empty command was entered.
         printf("No Command has entered\n");
         return;
-    } else if(input || output){
-        if (input){
-            input = 1;
-            launch_io_put(pString,input,flag);
-        }
-        if (output){
-            output = 2 ;
-            launch_io_put(pString,output,flag);
-        }
     } else {
         launch(pString, flag);
     }
@@ -174,8 +142,6 @@ void launch(char **args,int flag)
         //check if returned -1
         wpid = waitpid(pid, &status, WUNTRACED);
     }
-    //printf("%d\n",wpid);
-
 }
 
 
@@ -186,44 +152,41 @@ void launch(char **args,int flag)
  * @param flag
  */
 
-void launch_io_put(char** args,int io_flag,int flag){
+void launch_io_put(char** args,int flag){
     pid_t pid;
     pid_t wpid;
     int status;
     int fd;
-    int pos;
-    int num = find_filename_index(args,&pos);
-    //printf("io sign index is:%d total num of string is %d\n",pos,num);
+    //int fd1;
+    int input = 0;
+    int output = 0;
+    int pos = find_first_io(args);
+    int num = find_filename_index(args,&input,&output);
     num--;
-
+    //printf("input:%d  output:%d\n",input,output);
     pid = fork();
     if (pid == 0) {
         // Child process
-        //printf("flag is %d\n",io_flag);
-        if(io_flag == 1){
+        if(input){
             //do input
             //printf("< has entered\n");
-            if ((fd = open(args[num], O_RDONLY)) == -1){
-                perror(args[num]);
+            if ((fd = open(args[input+1], O_RDONLY)) == -1){
+                perror(args[input+1]);
             }
             dup2(fd,0);
             close(fd);
         }
-        if (io_flag == 2){
+        if (output){
             //do output
             //printf("> has entered\n");
-            if ((fd = open(args[num], O_WRONLY | O_CREAT, 0644)) == -1){
-                perror(args[num]);
+            if ((fd = open(args[output+1], O_WRONLY | O_CREAT, 0644)) == -1){
+                perror(args[output+1]);
             }
             dup2(fd,1);
             close(fd);
         }
-        int i = 0;
-/*		for(i = pos ; i < num ; i++){
-		    args[i] = NULL;
-		}*/
+
         args[pos] = NULL;
-        //change_args(args);
 
         execvp(args[0], args);
         //if exec has returned then it has failed then i went the program to exit;
@@ -237,14 +200,25 @@ void launch_io_put(char** args,int io_flag,int flag){
     }
 }
 
-int find_filename_index(char** args,int* pos){
+int find_first_io(char** args){
     int i = 0;
     for(i = 0 ; args[i] != NULL ; i++){
-        if((strcmp(args[i],">") == 0) || (strcmp(args[i],"<") == 0)){
-            *pos = i;
+        if((strcmp(args[i],">") == 0) || (strcmp(args[i],"<") == 0)) {
+            return i;
         }
     }
+}
 
+int find_filename_index(char** args,int* in,int* out){
+    int i = 0;
+    for(i = 0 ; args[i] != NULL ; i++){
+        if((strcmp(args[i],">") == 0)){
+            *out = i;
+        }
+        if((strcmp(args[i],"<") == 0)){
+            *in = i;
+        }
+    }
     return i;
 }
 

@@ -14,17 +14,17 @@
 
 
 #define TOKEN_BUFFER_SIZE 64
-#define TOKENS " \t\r\n&"
+#define TOKENS " \t\n&"
 
 
 char* read_line();
 char** split(char* line);
-void execute(char** pString,int flag,int input,int output);
+void execute(char** pString,int flag);
 void shell_loop();
 void launch(char **args,int flag);
-void launch_io_put(char** args,int io_flag,int flag);
-void remove_words(char**);
-int find_filename_index(char** args,int* pos);
+void launch_io_put(char** args,int flag);
+int find_filename_index(char** args,int* in,int* out);
 void my_cd(char **args);
+int find_first_io(char** args);
 
 #endif //SHELL_MY_SHELL_H
