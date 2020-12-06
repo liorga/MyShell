@@ -14,8 +14,7 @@
 
 
 #define TOKEN_BUFFER_SIZE 64
-#define TOKENS " \\t\r\n\a&"
-
+#define TOKENS " \t\r\n&"
 
 
 char* read_line();
@@ -24,5 +23,8 @@ void execute(char** pString,int flag,int input,int output);
 void shell_loop();
 void launch(char **args,int flag);
 void launch_io_put(char** args,int io_flag,int flag);
+void remove_words(char**);
+int find_filename_index(char** args,int* pos);
+void my_cd(char **args);
 
 #endif //SHELL_MY_SHELL_H
