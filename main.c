@@ -77,8 +77,6 @@ char* read_line() {
     return line;
 }
 
-char** pipe_parsing()
-
 char** split(char* line) {
     int bufsize = TOKEN_BUFFER_SIZE;
     int pos = 0;
@@ -159,19 +157,17 @@ void launch_io_put(char** args,int flag){
     pid_t wpid;
     int status;
     int fd;
-    //int fd1;
     int input = 0;
     int output = 0;
     int pos = find_first_io(args);
     int num = find_filename_index(args,&input,&output);
     num--;
-    //printf("input:%d  output:%d\n",input,output);
+
     pid = fork();
     if (pid == 0) {
         // Child process
         if(input){
             //do input
-            //printf("< has entered\n");
             if ((fd = open(args[input+1], O_RDONLY)) == -1){
                 perror(args[input+1]);
             }
@@ -180,7 +176,6 @@ void launch_io_put(char** args,int flag){
         }
         if (output){
             //do output
-            //printf("> has entered\n");
             if ((fd = open(args[output+1], O_WRONLY | O_CREAT, 0644)) == -1){
                 perror(args[output+1]);
             }
@@ -193,7 +188,6 @@ void launch_io_put(char** args,int flag){
         execvp(args[0], args);
         //if exec has returned then it has failed then i went the program to exit;
         exit(EXIT_FAILURE);
-
     }
 
     // Parent process
