@@ -1,7 +1,6 @@
-#include "my_shell.h"
+#include "my_shell.h" //includes all defines and functions statements for the program
 
 int main(int argc, char* argv[]) {
-
     shell_loop();
     return 0;
 }
@@ -19,51 +18,57 @@ void shell_loop() {
     char redi_output = '>';
     char redi_input = '<';
 
+    //main loop of the program
     while (true) {
-        if(getcwd(cwd,size) == NULL ){
+        if(getcwd(cwd,size) == NULL ){ //prints to the shell the current working dir
             perror("getcwd\n");
             exit(EXIT_FAILURE);
         }
-        printf("%s (^_^)>  ",cwd);
-        line = read_line();
-        if (!strcmp(line, "exit")) {
+        printf("LG_SHELL:%s(^_^): ",cwd); // prompt printing
+        line = read_line(); //read line from user
+        if(strlen(line) == 0){ //if line is empty then continue
+            continue;
+        }
+        if (!strcmp(line, "exit")) { //handle the exit command from user
             exit(EXIT_SUCCESS);
         }
-
+        //check the & sign and turn on flag if its in the line
         if(strchr(line,wait_sign) == NULL){
             flag_for_wait = 0;
         } else{
             flag_for_wait = 1;
         }
 
+        // checks the redirection signs in the line and turn on the flag
         if((strchr(line,redi_input) != NULL) || (strchr(line,redi_output) != NULL)){
             io_flag = 1;
         } else{
             io_flag = 0;
         }
 
-        args = split(line);
 
-        if(strcmp(args[0],"cd") == 0){
+        args = split(line); // gets the command to char** to send later to execvp
+        if(strcmp(args[0],"cd") == 0){//handle cd command from user
             my_cd(args);
         }
         //printf("io flag:%d\n",io_flag);
         if(io_flag){
-            launch_io_put(args,flag_for_wait);
+            launch_io_put(args,flag_for_wait); // launch the redirection exec and handle > or < or < >
         } else {
-            execute(args, flag_for_wait);
+            execute(args, flag_for_wait); // launch the regular commands
         }
-
-        free(line);
-        free(args);
+        free(line); // free line
+        free(args); // free args
     }
     free(cwd);
-
 }
 
+/**
+ * read line from user using get line and put \0 insted of the \n read by getline
+ * @return the input from user after \0 inserted
+ */
 char* read_line() {
     char* line = NULL;
-
     ssize_t bufsize = 0; // have getline allocate a buffer for us
     if (getline(&line, &bufsize, stdin) == -1){
         perror("readline");
@@ -77,6 +82,14 @@ char* read_line() {
     return line;
 }
 
+
+/**
+ * gets the input from the user and splits the sting into tiny strings using tokens that each word
+ * is inserted into char** args one by one then put NULL in the end of args for later execvp
+ *
+ * @param line input from the user
+ * @return char** of the command and the rest of the command args
+ */
 char** split(char* line) {
     int bufsize = TOKEN_BUFFER_SIZE;
     int pos = 0;
@@ -102,14 +115,13 @@ char** split(char* line) {
                 exit(EXIT_FAILURE);
             }
         }
-
         single_word = strtok(NULL, TOKENS);
     }
     words_arr[pos] = NULL; // put null in the end of string array for execv to know when the args are over
-
     return words_arr;
 }
 
+//launch the commands if the args is empty then print a usge error to the user
 void execute(char** pString,int flag) {
 
     if (pString[0] == NULL) {
@@ -121,8 +133,10 @@ void execute(char** pString,int flag) {
     }
 }
 
-
-
+/**
+ * open a new fork then launching the wanted command in the child process
+ * if the & is on then wait
+ */
 void launch(char **args,int flag)
 {
     pid_t pid;
@@ -144,14 +158,13 @@ void launch(char **args,int flag)
     }
 }
 
-
 /**
- *
+ * launching the commands but for the redirection operators like < or > or < > combined
+ * gets the indexs of the < > signs and open the right files thet comes after them to read or write
+ * on or from them, then do the redirection by using dup and changing the stdin to the file read from and the stdout to be the file
  * @param args
- * @param io_flag
  * @param flag
  */
-
 void launch_io_put(char** args,int flag){
     pid_t pid;
     pid_t wpid;
@@ -182,7 +195,6 @@ void launch_io_put(char** args,int flag){
             dup2(fd,1);
             close(fd);
         }
-
         args[pos] = NULL;
 
         execvp(args[0], args);
@@ -195,7 +207,7 @@ void launch_io_put(char** args,int flag){
         wpid = waitpid(pid, &status, WUNTRACED);
     }
 }
-
+//find the first time < or > appears and return its index
 int find_first_io(char** args){
     int i = 0;
     for(i = 0 ; args[i] != NULL ; i++){
@@ -203,8 +215,15 @@ int find_first_io(char** args){
             return i;
         }
     }
+    return 0;
 }
-
+/**
+ *
+ * @param args list of word to iterate on
+ * @param in sent from outside of the fun to be changed inside the function
+ * @param out sent from outside of the fun to be changed inside the function
+ * @return
+ */
 int find_filename_index(char** args,int* in,int* out){
     int i = 0;
     for(i = 0 ; args[i] != NULL ; i++){
@@ -217,7 +236,7 @@ int find_filename_index(char** args,int* in,int* out){
     }
     return i;
 }
-
+//my cd implemetation
 void my_cd(char **args)
 {
     if (args[1] == NULL) {
@@ -227,7 +246,4 @@ void my_cd(char **args)
             perror("cd error");
         }
     }
-
 }
-
-
